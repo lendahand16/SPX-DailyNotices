@@ -1,0 +1,249 @@
+/*
+
+SPX Stylesheet
+(C) 2019 Oliver Lenehan
+
+*/
+
+@charset "UTF-8";
+
+@font-face {
+    font-family: "adelle-eb";
+    src: url('../font/adelle-eb.woff');
+    text-decoration: none;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "opensans-regular";
+    src: url('../font/opensans-regular.ttf');
+    text-decoration: none;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "ptserif-regular";
+    src: url('../font/ptserif-regular.ttf');
+    text-decoration: none;
+    font-style: normal;
+}
+
+:root {
+    box-sizing: border-box;
+    --spx-gold: #ffdd00;
+    --spx-blue: #003362;
+    --spx-grey: #e2e2e2;
+    --spx-light: #003e77;
+    --spx-dark: #001f3b;
+    --spx-hover: #d6bb0e;
+    --spx-active: #2196F3;
+    --spx-font-opensans: "opensans-regular", sans-serif;
+}
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+html {
+    background-color: var(--spx-blue);
+}
+body {
+	width: 1000px;
+	margin: 0 auto;
+	padding: 25px 0;
+}
+
+::-webkit-scrollbar {
+    width: 15px;
+    background: var(--spx-dark);
+    box-shadow: 0 0px 20px black inset;
+}
+::-webkit-scrollbar-corner {
+    background: var(--spx-dark);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--spx-hover);
+    border: 2px solid var(--spx-dark);
+    border-radius: 6px;
+    box-shadow: 0 5px 30px black;
+}
+
+/* Main Styles */
+
+.spx-block {
+    box-shadow: 0 10px 20px black;
+	margin-top: 40px;
+}
+
+.spx-button {
+    padding: 17px;
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    background-color: var(--spx-light);
+    color: white;
+    font-family: var(--spx-font-opensans);
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.spx-button.current {
+    background-color: var(--spx-active);
+}
+
+.spx-button:hover {
+    background-color: var(--spx-hover);
+    cursor: pointer;
+}
+
+
+/* Style for Banner */
+
+.spx-banner {
+    margin: 0;
+    border-left: 20px solid var(--spx-gold);
+}
+
+.spx-banner > .top {
+    height: 145px;
+    background-color: var(--spx-light);
+    padding: 10px 0;
+}
+
+.spx-banner > .top > .logo {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 25px;
+    height: 100%;
+}
+
+.spx-banner > .top > .title {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0;
+    padding-top: 15px;
+    padding-left: 35px;
+    height: 100%;
+    border-left: 3px solid var(--spx-gold);
+	color: white;
+	font-size: 70px;
+	font-weight: 800;
+	font-family: "adelle-eb", sans-serif;
+}
+
+.spx-banner > .top > .links {
+    float: right;
+    position: relative;
+    height: 100%;
+    margin-right: 10px;
+}
+
+.spx-banner > .top > .links a {
+    display: inline-block;
+    top: inherit;
+    bottom: inherit;
+    right: inherit;
+    width: 50px;
+    height: 50px;
+    margin: 0;
+    background-color: var(--spx-blue);
+    background-size: 100%;
+    background-repeat: no-repeat;
+    transition: background-color 0.1s linear;
+    border-radius: 25px;
+    cursor: pointer;
+}
+
+.spx-banner > .top > .links a:hover {
+    background-color: #004d96;
+}
+
+.spx-banner > .top > .links > .top {
+    display: block;
+    position: absolute;
+    top: 3px;
+    right: 0;
+    height: 40%;
+}
+
+.spx-banner > .top > .links > .bottom {
+    display: block;
+    position: absolute;
+    bottom: 3px;
+    right: 0;
+    height: 40%;
+}
+
+.spx-banner > .info {
+    height: 60px;
+	padding: 5px;
+    background-color: var(--spx-dark);
+}
+
+.spx-banner > .info > h1 {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0;
+    height: 100%;
+    padding-top: 11px;
+    padding-left: 10px;
+    color: #e2e2e2;
+    font-family: var(--spx-font-opensans);
+    font-size: 20px;
+    font-weight: normal;
+}
+
+.spx-banner > .info > button {
+    width: 140px;
+    height: 100%;
+    padding: 12px;
+    float: right;
+    background-color: #24659b;
+}
+
+/*Need to try and de-dupe*/
+.spx-banner > .info > button:hover {
+    background-color: var(--spx-hover);
+    cursor: pointer;
+}
+
+.spx-banner > .content {
+    background-color: var(--spx-grey);
+}
+
+/* Style for Pages */
+
+.spx-page {
+    padding: 20px;
+    background-color: var(--spx-grey);
+}
+
+.spx-page > h1 {
+    display: block;
+    margin: 20px 0;
+    text-align: center;
+    font-family: var(--spx-font-opensans);
+    font-size: 33px;
+    font-weight: 700;
+}
+
+.spx-page > p {
+    display: block;
+    margin: 0;
+    font-family: var(--spx-font-opensans);
+    font-size: 17px;
+}
+
+.spx-page > hr {
+    border: 1px solid #b8b8b8;
+    width: 100%;
+    margin: 10px 0;
+}
+
+/* Style for Footer */
+
+.spx-footer {
+	padding: 20px;
+    background-color: var(--spx-light);
+	color: white;
+    font-family: var(--spx-font-opensans);
+    border-left: 20px solid var(--spx-gold);
+}

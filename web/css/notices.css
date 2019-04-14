@@ -1,0 +1,80 @@
+/*
+
+SPX Daily Notices Stylesheet
+(C) 2019 Oliver Lenehan
+
+*****
+To used as a superset of spx.css
+*****
+*/
+
+.notices-date-controls {
+    text-align: center;
+}
+
+.notices-date-controls > button {
+    display: inline-block;
+    vertical-align: top;
+    width: 33%;
+    margin-right: 0.5%;
+}
+.notices-date-controls > button:last-of-type {
+    margin: 0;
+}
+
+.notices-year-controls {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.notices-year-controls > button {
+    display: inline-block;
+    vertical-align: top;
+    width: calc(100% / 9.4);
+    margin-right: 0.5%;
+}
+.notices-year-controls > button:last-of-type {
+    margin: 0;
+}
+
+.notices-notice {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #d3d3d3;
+    box-shadow: 0 0 2px black;
+}
+
+.notices-notice:first-of-type {
+    margin: 0;
+}
+
+.notices-notice.event {
+    padding: 10px 20px 10px 5px;
+    border-left: 15px solid #75ad8b;
+}
+
+.notices-notice > .title {
+    font-family: "opensans-regular";
+    font-size: 30px;
+    font-weight: 600;
+}
+
+.notices-notice > .message {
+    padding-top: 10px;
+    padding-left: 10px;
+    font-family: "ptserif-regular";
+    font-size: 20px;
+}
+
+.notices-notice > .address {
+    padding-top: 10px;
+    padding-left: 10px;
+    font-family: "ptserif-regular";
+}
+
+.notices-notice > .info {
+    padding-top: 10px;
+    padding-left: 10px;
+    font-family: "ptserif-regular";
+    font-style: italic;
+}

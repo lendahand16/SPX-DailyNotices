@@ -1,0 +1,21 @@
+{
+  "name": "spx-dailynotices",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/notice_app.js",
+  "scripts": {
+    "build": "tsc && node ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lendahand16/spx-dailynotices.git"
+  },
+  "author": "Oliver Lenehan",
+  "dependencies": {
+    "@types/node": "^11.13.4",
+    "@types/sqlite3": "^3.1.5",
+    "babel-minify": "^0.5.0",
+    "sqlite3": "^4.0.6",
+    "typescript": "^3.4.3"
+  }
+}

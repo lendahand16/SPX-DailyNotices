@@ -1,0 +1,15 @@
+{
+    "notices": [
+        {
+            "id": 0,
+            "title": "notice markup format",
+            "message": "notice markup format",
+            "author": "plain text",
+            "beginDate": "ISO 8601",
+            "endDate": "ISO 8601",
+            "meta": [
+                "event"
+            ]
+        }
+    ]
+}
