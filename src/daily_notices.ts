@@ -216,11 +216,17 @@ namespace Notices {
                     await Notices.replyErrorPage("400", response);
                     return;
                 }
-                console.log("[API:GET/groups]", groups);
-                console.log("[API:GET/begin]", new Date(urlQuery["begin"]));
-                console.log("[API:GET/end]", new Date(urlQuery["end"]));
+                //console.log("[API:GET/groups]", groups);
+                //console.log("[API:GET/begin]", new Date(urlQuery["begin"]));
+                //console.log("[API:GET/end]", new Date(urlQuery["end"]));
                 // CHECK BEGIN - ISO8601
                 // FORM DATE FROM INPUT, DONT CARE IF MALFORMED
+                try {
+                    new Date(urlQuery["begin"]);
+                    new Date(urlQuery["end"]);
+                } catch {
+                    // EXCEPT
+                }
                 // CHECK END - ISO8601
                 // FORM DATE FROM INPUT, DONT CARE IF MALFORMED
                 // DATABASE QUERY
