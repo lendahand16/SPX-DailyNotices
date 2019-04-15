@@ -27,11 +27,9 @@ spxButtonToday.onclick = viewToday;
 spxButtonNextDay.onclick = viewNextDay;
 spxButtonPrevDay.onclick = viewPrevDay;
 
-updateDates();
-
-
-
-
+getNotices(currDate).then(()=>{
+    updateDates();
+});
 
 async function getNotices(date=Date.prototype) {
     return new Promise(function executor(resolve, reject){
@@ -98,10 +96,6 @@ function updateDateText () {
     spxButtonPrevDay.textContent = "View "+spxPrevDayFmt.shortDayName+" "+spxPrevDayFmt.padDate+"."+spxPrevDayFmt.month+"."+spxPrevDayFmt.shortYear;
     spxButtonNextDay.textContent = "View "+spxNextDayFmt.shortDayName+" "+spxNextDayFmt.padDate+"."+spxNextDayFmt.month+"."+spxNextDayFmt.shortYear;
 }
-
-
-
-
 
 function fmtDate (date=Date.prototype) {
     let dayName = [

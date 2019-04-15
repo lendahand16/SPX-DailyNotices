@@ -4,10 +4,28 @@ import Http = require('http');
 import Https = require('https');
 import Fs = require('fs');
 import Path = require('path');
-import Sqlite3 = require("better-sqlite3");
+import NeDB = require("nedb");
+//import Sqlite3 = require("better-sqlite3");
 
-const dbConn = new Sqlite3("./db/notices.db",{fileMustExist:true});
+//const dbConn = new Sqlite3("./db/notices.db",{fileMustExist:true});
+const dbConn = new NeDB({filename:"./db/notices.db",autoload:true});
+// cleanup database every 30 minutes... 1000ms * 60s * 30m
+dbConn.persistence.setAutocompactionInterval(1000 * 60 * 30);
 
+/*
+dbConn.insert({ _id: "__autoid__", value: -1 });
+
+dbConn.insert({
+    noticeId: 0,
+    title: "NoticeOne",
+    message: "Hello",
+    author: "Me",
+    beginDate: new Date(),
+    endDate: new Date(),
+    groups: "5,6,7,8,9,10,",
+    meta: "event"
+});
+*/
 /*
 
 TODO
@@ -19,37 +37,31 @@ TODO
 
 namespace DBUtil {
 
-    //const db = new Sqlite3("./db/notices.db", {
-    //    fileMustExist: true
-    //});
+    export async function search (conn: NeDB, query: any) {
+        return new Promise(function executor(resolve, reject){
+            conn.find(query, function (err:any, docs:any){
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                } else {
+                    resolve(docs);
+                }
+            });
+        });
+    }
 
-    //const noticeList = db.prepare("SELECT * FROM notices WHERE (groups LIKE '%'||?||'%');").all('5');
-    //console.log(noticeList);
-
-/*
-
-CREATE TABLE notices (
-    noticeID  INTEGER PRIMARY KEY AUTOINCREMENT
-                      UNIQUE
-                      NOT NULL,
-    title     TEXT,
-    message   TEXT,
-    author    TEXT,
-    beginDate TEXT,
-    endDate   TEXT,
-    groups    TEXT,
-    meta      TEXT
-);
-
-
-SELECT * FROM notices WHERE (groups LIKE '%YEARGROUP%' [OR groups LIKE '%YEARGROUP%']);
-
-*/
 }
 
 namespace Util {
 
-    export type ErrorCode = "400" | "403" | "404" | "500";
+    //export type ErrorCode = "400" | "403" | "404" | "500";
+
+    export enum ErrorKind {
+        HTTP_400,
+        HTTP_403,
+        HTTP_404,
+        HTTP_500
+    }
 
     interface I_MIME {
         [extension: string]: string;
@@ -64,29 +76,19 @@ namespace Util {
         ".txt":  "text/plain",
         ".woff": "font/woff"
     }
-    
-    /*
-    export interface I_RequestData {
-        get?: {
-            [key: string]: string;
-        };
-        post?: {
-            [key: string]: string;
-        };
-    }*/
 
     export function begins (root: string, filepath: string) {
         return filepath.startsWith(root);
     }
 
     export async function read (filename: string): Promise<Buffer> {
-        return new Promise(function executor(resolve: (value: Buffer)=>void, reject: (reason: ErrorCode)=>void){
+        return new Promise(function executor(resolve: (value: Buffer)=>void, reject: (reason: ErrorKind)=>void){
             Fs.readFile(filename, function onRead(err, data){
                 if (err) {
                     if (err.code === "ENOENT") {
-                        reject("404");
+                        reject(ErrorKind.HTTP_404);
                     } else {
-                        reject("500");
+                        reject(ErrorKind.HTTP_500);
                     }
                     return;
                 } else {
@@ -133,6 +135,17 @@ namespace Util {
 
 namespace Notices {
 
+    export interface I_NoticeDocument {
+        noticeID: number;
+        title: string;
+        message: string;
+        author: string;
+        beginDate: string;
+        endDate: string;
+        groups: string;
+        meta: string;
+    }
+
     export async function serveMain (request: Http.IncomingMessage, response: Http.ServerResponse) {
         // Check to see if userid cookie set, then check to see if it is stored in credentials.
         return;
@@ -141,54 +154,42 @@ namespace Notices {
     export async function serveWebGet (request: Http.IncomingMessage, response: Http.ServerResponse) {
         try {
             if (!request.url){
-                await replyErrorPage("500", response);
-                return;
+                throw Util.ErrorKind.HTTP_500;
             }
             let file = await Util.read("."+request.url);
             let extension = Path.extname(request.url);
             response.writeHead(200, {"Content-Type": (Util.MIME[extension] || Util.MIME[".txt"])});
             response.end(file);
         } catch (e) {
-            await replyErrorPage("404", response);
+            throw e;
         }
         return;
     }
 
-    export async function replyErrorPage (code: Util.ErrorCode, response: Http.ServerResponse) {
-        if (code === "400") {
-            try {
-                let file = await Util.read("./web_app/400.html");
-                response.writeHead(400,{"Content-Type":"text/html"});
-                response.end(file);
-            } catch (e) {
-                await replyErrorPage("500", response);
+    export async function replyErrorPage (code: Util.ErrorKind, response: Http.ServerResponse) {
+        try {
+            switch (code) {
+                case Util.ErrorKind.HTTP_400:
+                    response.writeHead(400,{"Content-Type":"text/html"});
+                    response.end(await Util.read("./web_app/400.html"));
+                    break;
+                case Util.ErrorKind.HTTP_403:
+                    response.writeHead(403,{"Content-Type":"text/html"});
+                    response.end(await Util.read("./web_app/403.html"));
+                    break;
+                case Util.ErrorKind.HTTP_404:
+                    response.writeHead(404,{"Content-Type":"text/html"});
+                    response.end(await Util.read("./web_app/404.html"));
+                    break;
+                default:
+                    response.writeHead(404,{"Content-Type":"text/html"});
+                    response.end(await Util.read("./web_app/404.html"));
+                    break;
             }
-        } else if (code === "403") {
-            try {
-                let file = await Util.read("./web_app/403.html");
-                response.writeHead(403,{"Content-Type":"text/html"});
-                response.end(file);
-            } catch (e) {
-                await replyErrorPage("500", response);
-            }
-        } else if (code === "404") {
-            try {
-                let file = await Util.read("./web_app/404.html");
-                response.writeHead(404,{"Content-Type":"text/html"});
-                response.end(file);
-            } catch (e) {
-                await replyErrorPage("500", response);
-            }
-        } else {
-            try {
-                let file = await Util.read("./web_app/500.html");
-                response.writeHead(500,{"Content-Type":"text/html"});
-                response.end(file);
-            } catch (e) {
-                console.log("[Daily Notices][Web Service]\n",e);
-                response.writeHead(500,{"Content-Type":"text/plain"});
-                response.end("If you're seeing this, something really went wrong on the server.");
-            }
+        } catch (e) {
+            console.log("[Daily Notices][Web Service]\n", "FATAL ERROR");
+            response.writeHead(500,{"Content-Type":"text/plain"});
+            response.end("If you're seeing this, something really went wrong on the server.");
         }
         return;
     }
@@ -202,56 +203,50 @@ namespace Notices {
     export async function apiGet (request: Http.IncomingMessage, response: Http.ServerResponse) {
         request.url = request.url || "";
         let splitUrl = request.url.split("?");
-        if (splitUrl.length > 1) {
-            let urlQuery = Util.readQuery(decodeURIComponent(splitUrl[1]));
-            if (urlQuery["begin"] && urlQuery["end"] && urlQuery["groups"]) {
-                // CHECK GROUPS
-                let groups = urlQuery["groups"].split(",");
-                groups = groups.filter(function meetRule(v){
-                    return ['5','6','7','8','9','10','11','12','staff'].includes(v);
-                });
-                // CHANGE TO THROW ERROR AND CATCH IN MAIN PROGRAM
-                // Validate that GROUPS was formed correctly.
-                if (groups.length < 1) {
-                    await Notices.replyErrorPage("400", response);
-                    return;
-                }
-                //console.log("[API:GET/groups]", groups);
-                //console.log("[API:GET/begin]", new Date(urlQuery["begin"]));
-                //console.log("[API:GET/end]", new Date(urlQuery["end"]));
-                // CHECK BEGIN - ISO8601
-                // FORM DATE FROM INPUT, DONT CARE IF MALFORMED
-                try {
-                    new Date(urlQuery["begin"]);
-                    new Date(urlQuery["end"]);
-                } catch {
-                    // EXCEPT
-                }
-                // CHECK END - ISO8601
-                // FORM DATE FROM INPUT, DONT CARE IF MALFORMED
-                // DATABASE QUERY
-                // Filter out bad data, also used to see if request was valid.
+        if (splitUrl.length < 1) throw Util.ErrorKind.HTTP_400;
 
-                // Generate the like statement to search for the notices 
-                // where the url group is included
-                // yNy used to ensure uniqueness
-                let yearLikeStatement = groups.map(function forValue(v){
-                    return "groups LIKE '%y'||?||'y%'"
-                }).join(" OR ");
-                let finalQuery = "SELECT * FROM notices WHERE ("+yearLikeStatement+");";
-                let res = dbConn.prepare(finalQuery).all(...groups);
-                let output = {"notices": res};
-                await replyJson(JSON.stringify(output), response);
-                return;
+        let urlQuery = Util.readQuery(decodeURIComponent(splitUrl[1]));
+        if (urlQuery["begin"] && urlQuery["end"] && urlQuery["groups"]) {
+            // CHECK GROUPS
+            let groups = urlQuery["groups"].split(",");
+            groups = groups.filter(function meetRule(v){
+                return ['5','6','7','8','9','10','11','12','staff'].includes(v);
+            });
+            // CHANGE TO THROW ERROR AND CATCH IN MAIN PROGRAM
+            // Validate that GROUPS was formed correctly.
+            if (groups.length < 1) {
+                throw Util.ErrorKind.HTTP_400;
             }
+            try {
+                new Date(urlQuery["begin"]);
+                new Date(urlQuery["end"]);
+            } catch {
+                throw Util.ErrorKind.HTTP_400;
+            }
+
+            let yearRegexStatement = groups.map(function forValue(v){
+                return v+","
+            }).join("|");
+            let output = await DBUtil.search(dbConn, {
+                groups: new RegExp('('+String(yearRegexStatement)+')'),
+                beginDate: { $lte: new Date(urlQuery["begin"]) },
+                endDate: { $gte: new Date(urlQuery["end"]) }
+            });
+            replyJson(JSON.stringify(output), response);
+            return;
         }
-        await Notices.replyErrorPage("400", response);
-        return;
+        
     }
     
     // Used through HTTP POST
     export async function apiAdd (request: Http.IncomingMessage, response: Http.ServerResponse) {
         request.url = request.url || "";
+        // need to verify identity
+        if (request.method === "POST") {
+
+        } else {
+            throw Util.ErrorKind.HTTP_400;
+        }
         return;
     }
 
@@ -269,47 +264,50 @@ namespace Notices {
 }
 
 // Main Program
-
 const server = Http.createServer(async function (request, response) {
 
     // For TypeScript, Remove the undefined value so its always a value
     request.url = request.url || "";
 
-    // API Handler
-    if (Util.begins("/api/", request.url)) {
-        if (Util.begins("/api/get", request.url)) {
-            await Notices.apiGet(request, response);
+    try {
+        // API Handler
+        if (Util.begins("/api/", request.url)) {
+            if (Util.begins("/api/get", request.url)) {
+                await Notices.apiGet(request, response);
+            } else if (Util.begins("/api/add", request.url)) {
+                await Notices.apiGet(request, response);
+            } else if (Util.begins("/api/update", request.url)) {
+                // need to verify identity
+            } else if (Util.begins("/api/delete", request.url)) {
+                // need to verify identity
+            } else {
+                throw Util.ErrorKind.HTTP_400;
+            }
             return;
-        } else if (Util.begins("/api/add", request.url)) {
-            // need to verify identity
-        } else if (Util.begins("/api/update", request.url)) {
-            // need to verify identity
-        } else if (Util.begins("/api/delete", request.url)) {
-            // need to verify identity
         }
-        await Notices.replyErrorPage("400", response);
-        return;
-    }
 
-    // Web Resource Handler
-    if (Util.begins("/web/", request.url)) {
-        await Notices.serveWebGet(request, response);
-        return;
-    }
+        // Web Resource Handler
+        if (Util.begins("/web/", request.url)) {
+            await Notices.serveWebGet(request, response);
+            return;
+        }
 
-    // Homepage Handler, Used to allow SSO (single sign on)
-    if (request.url === "/") {
-        // todo: use Notice.serveMain(); to allow for SSO
-        //temp
-        request.url = "/web_app/notices-view.html";
-        await Notices.serveWebGet(request, response);
-        return;
-    }
+        // Homepage Handler, Used to allow SSO (single sign on)
+        if (request.url === "/") {
+            // todo: use Notice.serveMain(); to allow for SSO
+            //temp
+            request.url = "/web_app/notices-view.html";
+            await Notices.serveWebGet(request, response);
+            return;
+        }
 
-    // Default Handler, Reply Not Found (Forbidden doesn't make sense unless it exists and its too harsh sounding)
-    await Notices.replyErrorPage("404", response);
+        // Default Handler, Reply Not Found (Forbidden doesn't make sense unless it exists and its too harsh sounding)
+        throw Util.ErrorKind.HTTP_404;
+
+    } catch (e) {
+        await Notices.replyErrorPage(e, response);
+    }
     return;
-
 });
 
 server.listen(8080, "0.0.0.0", function onReady () {

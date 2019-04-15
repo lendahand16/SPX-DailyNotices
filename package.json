@@ -6,16 +6,18 @@
   "scripts": {
     "build": "tsc && node ."
   },
-  "engines" : { "node" : ">=11.14.0" },
+  "engines": {
+    "node": ">=11.14.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lendahand16/spx-dailynotices.git"
   },
   "author": "Oliver Lenehan",
   "dependencies": {
-    "@types/better-sqlite3": "^5.2.3",
+    "@types/nedb": "^1.8.7",
     "@types/node": "^11.13.4",
-    "better-sqlite3": "^5.4.0",
+    "nedb": "^1.8.0",
     "typescript": "^3.4.3"
   }
 }

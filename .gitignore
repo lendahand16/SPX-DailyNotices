@@ -1,6 +1,4 @@
-bin/
 dist/
-db/
 etc/
 node_modules/
 .vscode/
