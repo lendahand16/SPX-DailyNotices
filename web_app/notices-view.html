@@ -20,30 +20,34 @@
 			</div>
         </div>
         <div class="info">
-            <h1>Saturday 13th April 2019</h1>
+            <h1 id="spx-js-text-date-info">Day Date Month Year</h1>
             <button class="spx-button" onclick="window.location.href='/web/doc/demo-sso.html'">Login</button>
         </div>
         <div class="content"></div>
     </div>
     <div class="spx-block spx-page">
         <div class="notices-date-controls">
-            <button class="spx-button">View Fri 12.04.19</button><!--
-         --><button class="spx-button">View Today</button><!--
-         --><button class="spx-button">View Sun 14.04.19</button>
+            <button id="spx-js-button-prevday" class="spx-button">View Day dd.mm.yy</button><!--
+         --><button id="spx-js-button-today" class="spx-button">View Today</button><!--
+         --><button id="spx-js-button-nextday" class="spx-button">View Day dd.mm.yy</button>
         </div>
         <hr/>
-        <h1>Notices - Saturday 13th April</h1>
+        <h1 id="spx-js-text-date-notices">Notices - Day Date Month</h1>
         <div class="notices-year-controls">
-                <button class="spx-button current">All</button><!--
-             --><button class="spx-button">Year 5</button><!--
-             --><button class="spx-button">Year 6</button><!--
-             --><button class="spx-button">Year 7</button><!--
-             --><button class="spx-button">Year 8</button><!--
-             --><button class="spx-button">Year 9</button><!--
-             --><button class="spx-button">Year 10</button><!--
-             --><button class="spx-button">Year 11</button><!--
-             --><button class="spx-button">Year 12</button>
+                <button id="spx-js-button-view-all" class="spx-button current">All</button><!--
+             --><button id="spx-js-button-view-5" class="spx-button">Year 5</button><!--
+             --><button id="spx-js-button-view-6" class="spx-button">Year 6</button><!--
+             --><button id="spx-js-button-view-7" class="spx-button">Year 7</button><!--
+             --><button id="spx-js-button-view-8" class="spx-button">Year 8</button><!--
+             --><button id="spx-js-button-view-9" class="spx-button">Year 9</button><!--
+             --><button id="spx-js-button-view-10" class="spx-button">Year 10</button><!--
+             --><button id="spx-js-button-view-11" class="spx-button">Year 11</button><!--
+             --><button id="spx-js-button-view-12" class="spx-button">Year 12</button>
         </div>
+        <!--<div class="notices-group-controls">
+            <button id="spx-js-button-view-all" class="spx-button current">All</button><!- -
+         - -><button id="spx-js-button-view-senior" class="spx-button">Senior</button><!- -
+         - -><button id="spx-js-button-view-junior" class="spx-button">Junior</button>-->
         <div id="notice-list">
             <div class="notices-notice event">
                 <div class="title">Senior Athletics Carnival</div>
@@ -60,5 +64,6 @@
         </div>
 	</div>
     <div class="spx-block spx-footer">St. Pius X College - 2019 - Made by Oliver Lenehan (Class of 2020)<a href="/web/doc/manual.html" class="link">Documentation</a></div>
+    <script src="/web/src/notices-lib.js"></script>
 </body>
 </html>

@@ -6,6 +6,8 @@ import Fs = require('fs');
 import Path = require('path');
 import Sqlite3 = require("better-sqlite3");
 
+const dbConn = new Sqlite3("./db/notices.db",{fileMustExist:true});
+
 /*
 
 TODO
@@ -14,6 +16,36 @@ TODO
     - Limit number of try/catches
 
 */
+
+namespace DBUtil {
+
+    //const db = new Sqlite3("./db/notices.db", {
+    //    fileMustExist: true
+    //});
+
+    //const noticeList = db.prepare("SELECT * FROM notices WHERE (groups LIKE '%'||?||'%');").all('5');
+    //console.log(noticeList);
+
+/*
+
+CREATE TABLE notices (
+    noticeID  INTEGER PRIMARY KEY AUTOINCREMENT
+                      UNIQUE
+                      NOT NULL,
+    title     TEXT,
+    message   TEXT,
+    author    TEXT,
+    beginDate TEXT,
+    endDate   TEXT,
+    groups    TEXT,
+    meta      TEXT
+);
+
+
+SELECT * FROM notices WHERE (groups LIKE '%YEARGROUP%' [OR groups LIKE '%YEARGROUP%']);
+
+*/
+}
 
 namespace Util {
 
@@ -171,10 +203,39 @@ namespace Notices {
         request.url = request.url || "";
         let splitUrl = request.url.split("?");
         if (splitUrl.length > 1) {
-            let urlQuery = Util.readQuery(splitUrl[1]);
-            if (urlQuery["begin"] && urlQuery["end"] && urlQuery["years"]) {
+            let urlQuery = Util.readQuery(decodeURIComponent(splitUrl[1]));
+            if (urlQuery["begin"] && urlQuery["end"] && urlQuery["groups"]) {
+                // CHECK GROUPS
+                let groups = urlQuery["groups"].split(",");
+                groups = groups.filter(function meetRule(v){
+                    return ['5','6','7','8','9','10','11','12','staff'].includes(v);
+                });
+                // CHANGE TO THROW ERROR AND CATCH IN MAIN PROGRAM
+                // Validate that GROUPS was formed correctly.
+                if (groups.length < 1) {
+                    await Notices.replyErrorPage("400", response);
+                    return;
+                }
+                console.log("[API:GET/groups]", groups);
+                console.log("[API:GET/begin]", new Date(urlQuery["begin"]));
+                console.log("[API:GET/end]", new Date(urlQuery["end"]));
+                // CHECK BEGIN - ISO8601
+                // FORM DATE FROM INPUT, DONT CARE IF MALFORMED
+                // CHECK END - ISO8601
+                // FORM DATE FROM INPUT, DONT CARE IF MALFORMED
                 // DATABASE QUERY
-                await replyJson("{}", response);
+                // Filter out bad data, also used to see if request was valid.
+
+                // Generate the like statement to search for the notices 
+                // where the url group is included
+                // yNy used to ensure uniqueness
+                let yearLikeStatement = groups.map(function forValue(v){
+                    return "groups LIKE '%y'||?||'y%'"
+                }).join(" OR ");
+                let finalQuery = "SELECT * FROM notices WHERE ("+yearLikeStatement+");";
+                let res = dbConn.prepare(finalQuery).all(...groups);
+                let output = {"notices": res};
+                await replyJson(JSON.stringify(output), response);
                 return;
             }
         }
@@ -200,6 +261,8 @@ namespace Notices {
         return;
     }
 }
+
+// Main Program
 
 const server = Http.createServer(async function (request, response) {
 

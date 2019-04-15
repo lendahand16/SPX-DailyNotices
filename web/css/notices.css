@@ -26,7 +26,6 @@ To used as a superset of spx.css
     text-align: center;
     margin-bottom: 20px;
 }
-
 .notices-year-controls > button {
     display: inline-block;
     vertical-align: top;
@@ -35,6 +34,21 @@ To used as a superset of spx.css
 }
 .notices-year-controls > button:last-of-type {
     margin: 0;
+}
+
+.notices-group-controls {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.notices-group-controls > button:last-of-type {
+    margin: 0;
+}
+.notices-group-controls > button {
+    display: inline-block;
+    vertical-align: top;
+    width: calc(100% / 3.04);
+    margin-right: 0.5%;
 }
 
 .notices-notice {
