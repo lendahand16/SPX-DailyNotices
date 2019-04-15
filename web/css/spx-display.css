@@ -46,7 +46,7 @@ html {
     background-color: var(--spx-blue);
 }
 body {
-	width: 1000px;
+	width: 500px;
 	margin: 0 auto;
 	padding: 25px 0;
 }
@@ -66,7 +66,6 @@ body {
     box-shadow: 0 5px 30px black;
 }
 
-/* Main Styles */
 
 .spx-block {
     box-shadow: 0 10px 20px black;
@@ -74,6 +73,10 @@ body {
 }
 
 .spx-button {
+    display: block;
+    width: 30%;
+    margin: 0 auto;
+    margin-top: 20px;
     padding: 17px;
     border: none;
     outline: none;
@@ -95,31 +98,29 @@ body {
 }
 
 
-/* Style for Banner */
-
-.spx-banner {
+.spx-display {
     margin: 0;
     border-left: 20px solid var(--spx-gold);
 }
 
-.spx-banner > .top {
+.spx-display > .top {
     height: 145px;
     background-color: var(--spx-light);
     padding: 10px 0;
 }
 
-.spx-banner > .top .logo {
+.spx-display > .top .logo {
     display: inline-block;
     vertical-align: top;
-    margin: 0 25px;
+    margin: 0 20px;
     height: 100%;
 }
 
-.spx-banner > .top > .title {
+.spx-display > .top > .title {
     display: inline-block;
     vertical-align: top;
     margin: 0;
-    padding-top: 15px;
+    padding-top: 17px;
     padding-left: 35px;
     height: 100%;
     border-left: 3px solid var(--spx-gold);
@@ -129,96 +130,13 @@ body {
 	font-family: "adelle-eb", sans-serif;
 }
 
-.spx-banner > .top > .links {
-    float: right;
-    position: relative;
-    height: 100%;
-    margin-right: 10px;
-}
 
-.spx-banner > .top > .links a {
-    display: inline-block;
-    top: inherit;
-    bottom: inherit;
-    right: inherit;
-    width: 50px;
-    height: 50px;
-    margin: 0;
-    background-color: var(--spx-blue);
-    background-size: 100%;
-    background-repeat: no-repeat;
-    transition: background-color 0.1s linear;
-    border-radius: 25px;
-    cursor: pointer;
-}
-
-.spx-banner > .top > .links a:hover {
-    background-color: #004d96;
-}
-
-.spx-banner > .top > .links > .top {
-    display: block;
-    position: absolute;
-    top: 3px;
-    right: 0;
-    height: 40%;
-}
-
-.spx-banner > .top > .links > .bottom {
-    display: block;
-    position: absolute;
-    bottom: 3px;
-    right: 0;
-    height: 40%;
-}
-
-.spx-banner > .info {
-    height: 60px;
-	padding: 5px;
-    background-color: var(--spx-dark);
-}
-
-.spx-banner > .info > h1 {
-    display: inline-block;
-    vertical-align: top;
-    margin: 0;
-    height: 100%;
-    padding-top: 11px;
-    padding-left: 10px;
-    color: #e2e2e2;
-    font-family: var(--spx-font-opensans);
-    font-size: 20px;
-    font-weight: normal;
-}
-
-.spx-banner > .info > .spx-button,
-.spx-banner > .info > button {
-    width: 140px;
-    height: 100%;
-    padding: 12px;
-    float: right;
-    background-color: #24659b;
-    text-align: center;
-}
-
-.spx-banner > .info > .spx-button:hover,
-.spx-banner > .info > button:hover {
-    background-color: var(--spx-hover);
-    cursor: pointer;
-}
-
-.spx-banner > .content {
-    background-color: var(--spx-grey);
-}
-
-/* Style for Pages */
-
-.spx-page {
+.spx-display .content {
     padding: 20px;
     background-color: var(--spx-grey);
 }
 
-.spx-page > h1 {
+.spx-display .content > h1 {
     display: block;
     margin: 20px 0;
     text-align: center;
@@ -227,7 +145,16 @@ body {
     font-weight: 700;
 }
 
-.spx-page > p {
+.spx-display .content > h2 {
+    display: block;
+    margin: 20px 0 5px 0;
+    text-align: left;
+    font-family: var(--spx-font-opensans);
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.spx-display .content > p {
     display: block;
     margin: 0;
     font-family: var(--spx-font-opensans);
@@ -236,13 +163,25 @@ body {
     text-justify: kashida;
 }
 
-.spx-page > hr {
+.spx-display .content > hr {
     border: 1px solid #b8b8b8;
     width: 100%;
     margin: 10px 0;
 }
 
-/* Style for Footer */
+.spx-display .content .textbox {
+    width: 100%;
+    height: 50px;
+    padding: 0px 10px 1px 10px;
+    outline: none;
+    border: none;
+    border-radius: 10px;
+    border-bottom: 5px solid #003e77;
+    background-color: #FFFFFF;
+    font-family: var(--spx-font-opensans);
+    font-size: 27px;
+}
+
 
 .spx-footer {
     position: relative;
