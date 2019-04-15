@@ -232,7 +232,7 @@ namespace Notices {
                 beginDate: { $lte: new Date(urlQuery["begin"]) },
                 endDate: { $gte: new Date(urlQuery["end"]) }
             });
-            replyJson(JSON.stringify(output), response);
+            replyJson(JSON.stringify({"notices":output}), response);
             return;
         }
         
