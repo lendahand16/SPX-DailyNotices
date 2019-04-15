@@ -13,29 +13,27 @@ const dbConn = new NeDB({filename:"./db/notices.db",autoload:true});
 dbConn.persistence.setAutocompactionInterval(1000 * 60 * 30);
 
 /*
-dbConn.insert({ _id: "__autoid__", value: -1 });
-
-dbConn.insert({
-    noticeId: 0,
-    title: "NoticeOne",
-    message: "Hello",
-    author: "Me",
-    beginDate: new Date(),
-    endDate: new Date(),
-    groups: "5,6,7,8,9,10,",
-    meta: "event"
-});
-*/
-/*
 
 TODO
-- Clean up error handling tree.
-    - Use ErrorCodes from UTIL
-    - Limit number of try/catches
-
+- Good, Clear Namespaces.
 */
 
 namespace DBUtil {
+
+    export function initNoticesDB (conn: NeDB) {
+        conn.insert({ _id: "__autoid__", value: -1 });
+        /*dbConn.insert({
+            noticeId: 0,
+            title: "Notice Title",
+            message: "Message Content",
+            author: "A Very Good Author Indeed",
+            beginDate: new Date("2019-04-15T00:00:00.000Z"),
+            endDate: new Date("2019-04-15T00:00:00.000Z"),
+            groups: "5,6,7,8,9,10,",
+            meta: "event"
+        });*/
+    }
+    //initNoticesDB(dbConn);
 
     export async function search (conn: NeDB, query: any) {
         return new Promise(function executor(resolve, reject){
@@ -45,6 +43,35 @@ namespace DBUtil {
                     reject(err);
                 } else {
                     resolve(docs);
+                }
+            });
+        });
+    }
+
+    export async function searchOne (conn: NeDB, query: any) {
+        return new Promise(function executor(resolve, reject){
+            conn.findOne(query, function (err:any, doc:any){
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                } else {
+                    resolve(doc);
+                }
+            });
+        });
+    }
+
+    export async function insertNotice(conn: NeDB, notice: Notices.I_NoticeDocument) {
+        return new Promise(async function executor(resolve: ()=>void, reject: ()=>void){
+            let autoIDDoc = await searchOne(conn, { _id: "__autoid__" });
+            let newID: number = (autoIDDoc as any)["value"]+1;
+            conn.update({ _id: "__autoid__" }, {$set:{value:newID}}, {}, function(err, count, upset){
+                notice.noticeID = newID;
+                conn.insert(notice);
+                if (err) {
+                    reject();
+                } else {
+                    resolve();
                 }
             });
         });
@@ -77,6 +104,13 @@ namespace Util {
         ".woff": "font/woff"
     }
 
+    export interface I_RequestVars {
+        method: string;
+        get: { [key: string]: string };
+        post: string;
+        contentType: string;
+    }
+
     export function begins (root: string, filepath: string) {
         return filepath.startsWith(root);
     }
@@ -100,12 +134,12 @@ namespace Util {
     }
 
     // Read an HTTP GET Url Query String and turn into an object.
-    export function readQuery (str: string) {
+    export function readQuery (str: string): { [key: string]: string } {
         let params = str.split("&").map(v=>{return v.split("=")});
         let obj: {[key: string]:string} = {};
         for (let key of params) {
             if (key.length > 1) {
-                obj[key[0]] = key[1];
+                obj[key[0]] = decodeURIComponent(key[1]);
             } else {
                 obj[key[0]] = "";
             }
@@ -113,22 +147,41 @@ namespace Util {
         return obj;
     }
 
+    // Relies on knowing that the request has post before being called.
     // Read in an HTTP POST object to json format.
     export async function readPosted (request: Http.IncomingMessage): Promise<string> {
-        return new Promise(function executor(resolve: (postBody: string)=>void, reject: ()=>void){
-            let postBody = '';
-            if (request.method === "POST") {
-                request.on("data", function onData(chunk){
-                    postBody += String(chunk);
-                });
-                request.on("end", function onEnd(){
-                    resolve(postBody);
-                });
-            } else {
-                resolve("");
-            }
+        return new Promise(function executor(resolve: (postBody: string)=>void, reject: (code: ErrorKind)=>void){
+            let postBody = "";
+            request.on("data", function onData(chunk){
+                postBody += String(chunk);
+            });
+            request.on("end", function onEnd(){
+                resolve(postBody);
+            });
+            request.on("error", (err)=>{
+                reject(ErrorKind.HTTP_500);
+            })
             return;
         });
+    }
+
+    export async function getRequestVars (request: Http.IncomingMessage): Promise<I_RequestVars> {
+        request.url = request.url || "";
+        let output: I_RequestVars = {
+            "method": request.method || "",
+            "get": {},
+            "post": "",
+            "contentType": request.headers["content-type"] || ""
+        };
+        let splitUrl = request.url.split("?");
+        // If > 1 then it has a valid query ending
+        if (splitUrl.length > 1) {
+            output.get = readQuery(splitUrl[1]);
+        }
+        if (request.method === "POST") {
+            output.post = await readPosted(request);
+        }
+        return output;
     }
 
 }
@@ -140,8 +193,8 @@ namespace Notices {
         title: string;
         message: string;
         author: string;
-        beginDate: string;
-        endDate: string;
+        beginDate: Date;
+        endDate: Date;
         groups: string;
         meta: string;
     }
@@ -197,68 +250,64 @@ namespace Notices {
     function replyJson (text: string, response: Http.ServerResponse) {
         response.writeHead(200,{"Content-Type": Util.MIME[".json"]});
         response.end(text);
+        return;
     }
 
-    // Used throught HTTP POST
-    export async function apiGet (request: Http.IncomingMessage, response: Http.ServerResponse) {
-        request.url = request.url || "";
-        let splitUrl = request.url.split("?");
-        if (splitUrl.length < 1) throw Util.ErrorKind.HTTP_400;
+    // Used throught HTTP GET
+    // ISO8601 Params are URIComponent Encoded
+    // http://server:PORT/api/get?begin=ISO8601&end=ISO8601
+    export async function apiGet (requestVars: Util.I_RequestVars, response: Http.ServerResponse) {
+        if (requestVars.method !== "GET") throw Util.ErrorKind.HTTP_400;
+        if (requestVars.get["begin"] !== undefined && requestVars.get["end"] !== undefined) {
 
-        let urlQuery = Util.readQuery(decodeURIComponent(splitUrl[1]));
-        if (urlQuery["begin"] && urlQuery["end"] && urlQuery["groups"]) {
-            // CHECK GROUPS
-            let groups = urlQuery["groups"].split(",");
-            groups = groups.filter(function meetRule(v){
-                return ['5','6','7','8','9','10','11','12','staff'].includes(v);
-            });
-            // CHANGE TO THROW ERROR AND CATCH IN MAIN PROGRAM
-            // Validate that GROUPS was formed correctly.
-            if (groups.length < 1) {
-                throw Util.ErrorKind.HTTP_400;
-            }
             try {
-                new Date(urlQuery["begin"]);
-                new Date(urlQuery["end"]);
+                // Validate that these are real dates, error thrown if not. If Error, Goto Catch.
+                new Date(requestVars.get["begin"]);
+                new Date(requestVars.get["end"]);
             } catch {
+                // Throw Bad Request Error
                 throw Util.ErrorKind.HTTP_400;
             }
 
-            let yearRegexStatement = groups.map(function forValue(v){
-                return v+","
-            }).join("|");
             let output = await DBUtil.search(dbConn, {
-                groups: new RegExp('('+String(yearRegexStatement)+')'),
-                beginDate: { $lte: new Date(urlQuery["begin"]) },
-                endDate: { $gte: new Date(urlQuery["end"]) }
+                "beginDate": { $lte: new Date(requestVars.get["begin"]) },
+                "endDate": { $gte: new Date(requestVars.get["end"]) }
             });
+            delete (output as any)["_id"];
             replyJson(JSON.stringify({"notices":output}), response);
-            return;
-        }
-        
-    }
-    
-    // Used through HTTP POST
-    export async function apiAdd (request: Http.IncomingMessage, response: Http.ServerResponse) {
-        request.url = request.url || "";
-        // need to verify identity
-        if (request.method === "POST") {
-
         } else {
             throw Util.ErrorKind.HTTP_400;
         }
         return;
     }
-
+    
     // Used through HTTP POST
-    export async function apiUpdate (request: Http.IncomingMessage, response: Http.ServerResponse) {
-        request.url = request.url || "";
+    export async function apiAdd (requestVars: Util.I_RequestVars, response: Http.ServerResponse) {
+        // need to verify identity
+        // need to reply with a success/failure code
+        //if (requestVars.method !== "POST") throw Util.ErrorKind.HTTP_400;
+        DBUtil.insertNotice(dbConn, {
+            "noticeID": 0,
+            "title": "Notice Title",
+            "message": "Message Content",
+            "author": "Mr Teacher",
+            "beginDate": new Date(1555372800000),
+            "endDate": new Date(1555372800000),
+            "groups": "5,6,7,8,9,",
+            "meta": ""
+        });
+        response.writeHead(200);
+        response.end();
         return;
     }
 
     // Used through HTTP POST
-    export async function apiDelete (request: Http.IncomingMessage, response: Http.ServerResponse) {
-        request.url = request.url || "";
+    export async function apiUpdate (requestVars: Util.I_RequestVars, response: Http.ServerResponse) {
+        return;
+    }
+
+    // Used through HTTP POST
+    export async function apiDelete (requestVars: Util.I_RequestVars, response: Http.ServerResponse) {
         return;
     }
 }
@@ -272,14 +321,15 @@ const server = Http.createServer(async function (request, response) {
     try {
         // API Handler
         if (Util.begins("/api/", request.url)) {
+            let requestVars = await Util.getRequestVars(request);
             if (Util.begins("/api/get", request.url)) {
-                await Notices.apiGet(request, response);
+                await Notices.apiGet(requestVars, response);
             } else if (Util.begins("/api/add", request.url)) {
-                await Notices.apiGet(request, response);
+                await Notices.apiAdd(requestVars, response);
             } else if (Util.begins("/api/update", request.url)) {
-                // need to verify identity
+                await Notices.apiUpdate(requestVars, response);
             } else if (Util.begins("/api/delete", request.url)) {
-                // need to verify identity
+                await Notices.apiDelete(requestVars, response);
             } else {
                 throw Util.ErrorKind.HTTP_400;
             }

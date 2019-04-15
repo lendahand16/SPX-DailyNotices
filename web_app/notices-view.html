@@ -27,22 +27,22 @@
     </div>
     <div class="spx-block spx-page">
         <div class="notices-date-controls">
-            <button id="spx-js-button-prevday" class="spx-button">View Day dd.mm.yy</button><!--
-         --><button id="spx-js-button-today" class="spx-button">View Today</button><!--
-         --><button id="spx-js-button-nextday" class="spx-button">View Day dd.mm.yy</button>
+            <button id="spx-js-button-prevday" class="spx-button" onclick="viewPrevDay();">View Day dd.mm.yy</button><!--
+         --><button id="spx-js-button-today" class="spx-button" onclick="viewCurrDay();">View Today</button><!--
+         --><button id="spx-js-button-nextday" class="spx-button" onclick="viewNextDay();">View Day dd.mm.yy</button>
         </div>
         <hr/>
         <h1 id="spx-js-text-date-notices">Notices - Day Date Month</h1>
-        <div class="notices-year-controls">
-                <button id="spx-js-button-view-all" class="spx-button current">All</button><!--
-             --><button id="spx-js-button-view-5" class="spx-button">Year 5</button><!--
-             --><button id="spx-js-button-view-6" class="spx-button">Year 6</button><!--
-             --><button id="spx-js-button-view-7" class="spx-button">Year 7</button><!--
-             --><button id="spx-js-button-view-8" class="spx-button">Year 8</button><!--
-             --><button id="spx-js-button-view-9" class="spx-button">Year 9</button><!--
-             --><button id="spx-js-button-view-10" class="spx-button">Year 10</button><!--
-             --><button id="spx-js-button-view-11" class="spx-button">Year 11</button><!--
-             --><button id="spx-js-button-view-12" class="spx-button">Year 12</button>
+        <div id="spx-js-group-controls" class="notices-group-controls">
+                <button id="spx-js-button-view-all" class="spx-button" onclick="setGroup('all',this);">All</button><!--
+             --><button id="spx-js-button-view-5" class="spx-button" onclick="setGroup('5',this);">Year 5</button><!--
+             --><button id="spx-js-button-view-6" class="spx-button" onclick="setGroup('6',this);">Year 6</button><!--
+             --><button id="spx-js-button-view-7" class="spx-button" onclick="setGroup('7',this);">Year 7</button><!--
+             --><button id="spx-js-button-view-8" class="spx-button" onclick="setGroup('8',this);">Year 8</button><!--
+             --><button id="spx-js-button-view-9" class="spx-button" onclick="setGroup('9',this);">Year 9</button><!--
+             --><button id="spx-js-button-view-10" class="spx-button" onclick="setGroup('10',this);">Year 10</button><!--
+             --><button id="spx-js-button-view-11" class="spx-button" onclick="setGroup('11',this);">Year 11</button><!--
+             --><button id="spx-js-button-view-12" class="spx-button" onclick="setGroup('12',this);">Year 12</button>
         </div>
         <!--<div class="notices-group-controls">
             <button id="spx-js-button-view-all" class="spx-button current">All</button><!- -

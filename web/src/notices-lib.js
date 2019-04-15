@@ -1,132 +1,114 @@
 //@ts-check
 
-// Main Code
+// ================================================================
+//   Main Program
+// ================================================================
 
-// Initialise spxTodayDate to UTC of current day at 0000 hours
-const spxTodayDate = setToUtcZero(new Date());
-let currDate = new Date(spxTodayDate);
-let currentGroupStr = "";
+const SPX_TODAY = setToUtcZero(new Date());
+let SPX_CURRENT_NOTICES = [];
+let SPX_CURRENT_DATE = new Date(SPX_TODAY);
+let SPX_CURRENT_GROUP = "";
+setGroup("all",document.getElementById("spx-js-button-view-all"));
+viewCurrDay();
 
-let spxButtonToday   = document.getElementById("spx-js-button-today");
-let spxButtonNextDay = document.getElementById("spx-js-button-nextday");
-let spxButtonPrevDay = document.getElementById("spx-js-button-prevday");
-let spxButtonViewAll = document.getElementById("spx-js-button-view-all");
-let spxButtonView5   = document.getElementById("spx-js-button-view-5");
-let spxButtonView6   = document.getElementById("spx-js-button-view-6");
-let spxButtonView7   = document.getElementById("spx-js-button-view-7");
-let spxButtonView8   = document.getElementById("spx-js-button-view-8");
-let spxButtonView9   = document.getElementById("spx-js-button-view-9");
-let spxButtonView10  = document.getElementById("spx-js-button-view-10");
-let spxButtonView11  = document.getElementById("spx-js-button-view-11");
-let spxButtonView12  = document.getElementById("spx-js-button-view-12");
 
-spxButtonToday.onclick=()=>{currDate=new Date(spxTodayDate);loadNotices(currentGroupStr,spxTodayDate);};
-spxButtonNextDay.onclick=()=>{currDate=getNextDate(currDate);loadNotices(currentGroupStr,currDate);};
-spxButtonPrevDay.onclick=()=>{currDate=getPrevDate(currDate);loadNotices(currentGroupStr,currDate);};
+// ================================================================
+//   Function Declarations
+// ================================================================
 
-spxButtonViewAll.addEventListener("click",function(e){loadNotices("all",currDate);setActiveGroupButton(this);});
-spxButtonView5.addEventListener("click",function(e){loadNotices("5",currDate);setActiveGroupButton(this);});
-spxButtonView6.addEventListener("click",function(e){loadNotices("6",currDate);setActiveGroupButton(this);});
-spxButtonView7.addEventListener("click",function(e){loadNotices("7",currDate);setActiveGroupButton(this);});
-spxButtonView8.addEventListener("click",function(e){loadNotices("8",currDate);setActiveGroupButton(this);});
-spxButtonView9.addEventListener("click",function(e){loadNotices("9",currDate);setActiveGroupButton(this);});
-spxButtonView10.addEventListener("click",function(e){loadNotices("10",currDate);setActiveGroupButton(this);});
-spxButtonView11.addEventListener("click",function(e){loadNotices("11",currDate);setActiveGroupButton(this);});
-spxButtonView12.addEventListener("click",function(e){loadNotices("12",currDate);setActiveGroupButton(this);});
 
-spxButtonViewAll.click();
-
-function setActiveGroupButton (selected=HTMLElement.prototype) {
-	spxButtonViewAll.className = "spx-button";
-	spxButtonView5.className   = "spx-button";
-	spxButtonView6.className   = "spx-button";
-	spxButtonView7.className   = "spx-button";
-	spxButtonView8.className   = "spx-button";
-	spxButtonView9.className   = "spx-button";
-	spxButtonView10.className  = "spx-button";
-	spxButtonView11.className  = "spx-button";
-	spxButtonView12.className  = "spx-button";
-	selected.className = "spx-button current";
+function refreshView() {
+    fetchNotices(SPX_CURRENT_DATE,()=>{
+        updateDateLabels();
+        displayGroup(SPX_CURRENT_GROUP);
+    });
 }
+function viewCurrDay(){SPX_CURRENT_DATE=getRelativeDate(SPX_TODAY);refreshView();}
+function viewNextDay(){SPX_CURRENT_DATE=getRelativeDate(SPX_CURRENT_DATE,1);refreshView();}
+function viewPrevDay(){SPX_CURRENT_DATE=getRelativeDate(SPX_CURRENT_DATE,-1);refreshView();}
 
-function getNotices(groupQueryStr="", date=Date.prototype, callback=(res="")=>{}) {
-	let xhr = new XMLHttpRequest();
-	xhr.timeout = 5000;
-	let begin = encodeURIComponent(date.toISOString());
-	let end = encodeURIComponent(date.toISOString());
-	xhr.open("GET", "/api/get?groups="+groupQueryStr+"&begin="+begin+"&end="+end);
-	xhr.send();
-	xhr.onreadystatechange = function(){
-		if (xhr.readyState === xhr.DONE && xhr.status === 200) {
-			callback(xhr.responseText);
-			//console.log(xhr.responseText);
-		} else if (xhr.readyState === xhr.DONE) {
-			console.error("Error Getting Notices");
-		}
-	};
-}
-
-function getNextDate(date=Date.prototype) {
+function getRelativeDate(date=Date.prototype, offset=0) {
 	let nextDate = new Date(date);
-	nextDate.setDate(date.getDate() + 1);
+	nextDate.setDate(date.getDate() + offset);
 	return nextDate;
 }
 
-function getPrevDate(date=Date.prototype) {
-	let prevDate = new Date(date);
-	prevDate.setDate(date.getDate() - 1);
-	return prevDate;
+function fetchNotices(date=Date.prototype, callback=()=>{}) {
+	let xhr = new XMLHttpRequest();
+	xhr.timeout = 5000;
+    let dateParam = encodeURIComponent(date.toISOString());
+	xhr.open("GET", "/api/get?begin="+dateParam+"&end="+dateParam);
+	xhr.send();
+	xhr.onreadystatechange = function(){
+		if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+            SPX_CURRENT_NOTICES = JSON.parse(xhr.responseText)["notices"];
+            callback();
+		} else if (xhr.readyState === xhr.DONE) {
+			console.error("Error Getting Notices");
+		}
+    };
+    xhr.onerror = function(e) {
+        console.error(e);
+    }
+    return;
 }
 
-function loadNotices(group="", date=Date.prototype) {
-	let spxNoticeList = document.getElementById("spx-js-notice-list");
-	let groupQueryStr = "5,6,7,8,9,10,11,12";
-	switch (group) {
-		case "5": groupQueryStr = "5"; break;
-		case "6": groupQueryStr = "6"; break;
-		case "7": groupQueryStr = "7"; break;
-		case "8": groupQueryStr = "8"; break;
-		case "9": groupQueryStr = "9"; break;
-		case "10": groupQueryStr = "10"; break;
-		case "11": groupQueryStr = "11"; break;
-		case "12": groupQueryStr = "12"; break;
-		default: break;
-	}
-	currentGroupStr = groupQueryStr;
-	getNotices(groupQueryStr, date, function callback(res){
-		while (spxNoticeList.lastChild) spxNoticeList.removeChild(spxNoticeList.lastChild);
-		updateDateTexts();
-		console.log(res);
-		let notices = JSON.parse(res)["notices"];
-		for (let note of notices) {
-			let noticeElement = document.createElement("div");
-			let noticeTitle = document.createElement("div");
-			let noticeMessage = document.createElement("div");
-			let noticeInfo = document.createElement("div");
-			noticeTitle.textContent = note["title"];
-			noticeTitle.className = "title";
-			noticeMessage.textContent = note["message"];
-			noticeMessage.className = "message";
-			noticeInfo.textContent = note["author"];
-			noticeInfo.className = "info";
-			noticeElement.appendChild(noticeTitle);
-			noticeElement.appendChild(noticeMessage);
-			noticeElement.appendChild(noticeInfo);
-			noticeElement.className = "notices-notice";
-			spxNoticeList.appendChild(noticeElement);
-		}
-	});
+function setActiveGroupButton (selected=HTMLElement.prototype) {
+    let groupControls = document.getElementById("spx-js-group-controls");
+	for (let i=0; i<groupControls.children.length; i++) {
+        groupControls.children[i].className = "spx-button";
+    }
+	selected.className = "spx-button current";
+}
+
+function setGroup(group="", button=HTMLElement.prototype) {
+    setActiveGroupButton(button);
+    displayGroup(group);
+}
+
+function displayGroup(group="") {
+    SPX_CURRENT_GROUP = group;
+    let spxNoticesElement = document.getElementById("spx-js-notice-list");
+    let relevantNotices = [];
+    if (group === "all") {
+        relevantNotices = SPX_CURRENT_NOTICES;
+    } else {
+        relevantNotices = SPX_CURRENT_NOTICES.filter(function filter(value){
+            // Tests where the groups field has the specified group
+            return new RegExp(group+",").test(value["groups"]);
+        });
+    }
+    while (spxNoticesElement.lastChild) spxNoticesElement.removeChild(spxNoticesElement.lastChild);
+    for (let i=0;i<relevantNotices.length;i++) {
+        let noticeElement = document.createElement("div");
+        let noticeTitle = document.createElement("div");
+        let noticeMessage = document.createElement("div");
+        let noticeInfo = document.createElement("div");
+        noticeTitle.textContent = relevantNotices[i]["title"];
+        noticeTitle.className = "title";
+        noticeMessage.textContent = relevantNotices[i]["message"];
+        noticeMessage.className = "message";
+        noticeInfo.textContent = relevantNotices[i]["author"];
+        noticeInfo.className = "info";
+        noticeElement.appendChild(noticeTitle);
+        noticeElement.appendChild(noticeMessage);
+        noticeElement.appendChild(noticeInfo);
+        noticeElement.className = "notices-notice";
+        spxNoticesElement.appendChild(noticeElement);
+    }
 }
 
 // Update the previous and next days based on current view date .
-function updateDateTexts () {
+function updateDateLabels () {
 
 	let spxTextDateInfo = document.getElementById("spx-js-text-date-info");
 	let spxTextDateNotices = document.getElementById("spx-js-text-date-notices");
-	let spxTodayFmt = fmtDate(spxTodayDate);
-	let spxCurrDayFmt = fmtDate(currDate);
-	let spxPrevDayFmt = fmtDate(getPrevDate(currDate));
-	let spxNextDayFmt = fmtDate(getNextDate(currDate));
+	let spxButtonPrevDay = document.getElementById("spx-js-button-prevday");
+	let spxButtonNextDay = document.getElementById("spx-js-button-nextday");
+	let spxTodayFmt = fmtDate(SPX_TODAY);
+	let spxCurrDayFmt = fmtDate(SPX_CURRENT_DATE);
+	let spxPrevDayFmt = fmtDate(getRelativeDate(SPX_CURRENT_DATE,-1));
+	let spxNextDayFmt = fmtDate(getRelativeDate(SPX_CURRENT_DATE,1));
 
 	// Initialise Text: Dates, Button Labels
 	spxTextDateInfo.textContent = spxTodayFmt.dayName+" "+spxTodayFmt.date+spxTodayFmt.dateSuffix+" "+spxTodayFmt.monthName+" "+spxTodayFmt.year;
@@ -165,7 +147,5 @@ function fmtDate (date=Date.prototype) {
 }
 
 function setToUtcZero (date=Date.prototype) {
-	date.setUTCHours(0,0,0,0);
-	date.setUTCFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-	return date;
+	return new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate(),0,0,0,0));
 }
