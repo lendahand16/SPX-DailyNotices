@@ -1,7 +1,4 @@
-{"_id":"__autoid__","value":-1}
-{"_id":"__autoid__","value":0}
+{"noticeID":2,"title":"Notice Title","message":"Message Content","author":"Mr Teacher","beginDate":{"$$date":1555372800000},"endDate":{"$$date":1555372800000},"groups":"5,6,7,8,9,","meta":"","_id":"KDWfA37HyIFgNGJ1"}
 {"noticeID":0,"title":"Notice Title","message":"Message Content","author":"Mr Teacher","beginDate":{"$$date":1555372800000},"endDate":{"$$date":1555372800000},"groups":"5,6,7,8,9,","meta":"","_id":"ONSSnrJdqOoxpm28"}
-{"_id":"__autoid__","value":1}
 {"noticeID":1,"title":"Notice Title","message":"Message Content","author":"Mr Teacher","beginDate":{"$$date":1555372800000},"endDate":{"$$date":1555372800000},"groups":"5,6,7,8,9,","meta":"","_id":"ToFujYgXpVXkB1Tr"}
 {"_id":"__autoid__","value":2}
-{"noticeID":2,"title":"Notice Title","message":"Message Content","author":"Mr Teacher","beginDate":{"$$date":1555372800000},"endDate":{"$$date":1555372800000},"groups":"5,6,7,8,9,","meta":"","_id":"KDWfA37HyIFgNGJ1"}

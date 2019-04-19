@@ -9,8 +9,6 @@ import NeDB = require("nedb");
 
 //const dbConn = new Sqlite3("./db/notices.db",{fileMustExist:true});
 const dbConn = new NeDB({filename:"./db/notices.db",autoload:true});
-// cleanup database every 30 minutes... 1000ms * 60s * 30m
-dbConn.persistence.setAutocompactionInterval(1000 * 60 * 30);
 
 /*
 
@@ -22,16 +20,6 @@ namespace DBUtil {
 
     export function initNoticesDB (conn: NeDB) {
         conn.insert({ _id: "__autoid__", value: -1 });
-        /*dbConn.insert({
-            noticeId: 0,
-            title: "Notice Title",
-            message: "Message Content",
-            author: "A Very Good Author Indeed",
-            beginDate: new Date("2019-04-15T00:00:00.000Z"),
-            endDate: new Date("2019-04-15T00:00:00.000Z"),
-            groups: "5,6,7,8,9,10,",
-            meta: "event"
-        });*/
     }
     //initNoticesDB(dbConn);
 
@@ -359,6 +347,10 @@ const server = Http.createServer(async function (request, response) {
     }
     return;
 });
+
+// cleanup database every 30 minutes... 1000ms * 60s * 30m
+dbConn.persistence.setAutocompactionInterval(1000 * 60 * 30);
+dbConn.persistence.compactDatafile();
 
 server.listen(8080, "0.0.0.0", function onReady () {
     console.log("[Daily Notices][WebService] Listening on Port:",8080);
